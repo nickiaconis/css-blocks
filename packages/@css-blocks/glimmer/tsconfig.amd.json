@@ -2,9 +2,9 @@
   "extends": "../../../tsconfig.json",
   "compilerOptions": {
     "outDir": "dist/amd",
-    "baseUrl": "dist/amd"
+    "baseUrl": "dist/amd",
+    "module": "amd"
   },
-  "module": "AMD",
   "include": [
     "src",
     "test"

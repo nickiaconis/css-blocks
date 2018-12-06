@@ -2,8 +2,8 @@
   "name": "@css-blocks/runtime",
   "version": "0.20.0-beta.4",
   "description": "Browser runtime for computing dynamic classnames with css-blocks.",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "files": [
     "dist"
   ],
@@ -11,8 +11,9 @@
     "pretest": "yarn run compile",
     "posttest": "yarn run lint",
     "test": "echo 'tested in @css-blocks/jsx'",
-    "compile": "rm -rf dist && tsc",
-    "prepublish": "yarn run compile && yarn run lintall",
+    "test:runner": "echo 'tested in @css-blocks/jsx'",
+    "compile": "tsc --build",
+    "prepublish": "rm -rf dist && yarn run compile && yarn run lintall",
     "lint": "tslint -t msbuild -c tslint.cli.json --project .",
     "lintall": "tslint -t msbuild --project . -c tslint.release.json",
     "lintfix": "tslint -t msbuild -c tslint.cli.json --project . --fix"
