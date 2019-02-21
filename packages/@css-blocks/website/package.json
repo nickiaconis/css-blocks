@@ -1,11 +1,11 @@
 {
   "name": "@css-blocks/website",
-  "version": "0.20.0-beta.4",
+  "version": "0.20.0-beta.7",
   "private": true,
   "dependencies": {
-    "@css-blocks/jsx": "^0.20.0-beta.4",
-    "@css-blocks/runtime": "^0.20.0-beta.4",
-    "@css-blocks/webpack": "^0.20.0-beta.4",
+    "@css-blocks/jsx": "^0.20.0-beta.7",
+    "@css-blocks/runtime": "^0.20.0-beta.7",
+    "@css-blocks/webpack": "^0.20.0-beta.7",
     "@types/jest": "^22.2.3",
     "@types/react-router-dom": "^4.2.3",
     "autoprefixer": "7.1.6",
@@ -38,10 +38,11 @@
     "promise": "8.0.1",
     "raf": "3.4.0",
     "react": "^16.1.1",
-    "react-dev-utils": "^4.2.1",
-    "react-dom": "^16.1.1",
+    "react-dev-utils": "^4.2.2",
+    "react-dom": "^16.1.2",
     "react-ga": "^2.5.0",
     "react-router-dom": "^4.2.2",
+    "snyk": "^1.116.2",
     "style-loader": "0.19.0",
     "sw-precache-webpack-plugin": "0.11.4",
     "ts-loader": "^3.1.1",
@@ -58,7 +59,8 @@
     "compile": "yarn run build",
     "test": "echo 'nothing to test'",
     "test:runner": "echo 'nothing to test'",
-    "serve": "node server.js"
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "jest": {
     "collectCoverageFrom": [
@@ -102,5 +104,6 @@
     "@types/react-dom": "^16.0.3",
     "clean-css": "^4.1.11",
     "obj-str": "^1.0.0"
-  }
+  },
+  "snyk": true
 }

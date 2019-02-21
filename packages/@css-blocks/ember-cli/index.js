@@ -1,9 +1,15 @@
 'use strict';
+const fs = require("fs");
+const path = require("path");
 
 const { CSSBlocksAggregate, CSSBlocksAnalyze, Transport } = require("@css-blocks/broccoli");
 const { GlimmerAnalyzer, GlimmerRewriter } = require("@css-blocks/glimmer");
+
+const BroccoliStew = require("broccoli-stew");
+const BroccoliConcat = require("broccoli-concat");
+const BroccoliMerge = require("broccoli-merge-trees");
+
 const debugGenerator = require("debug");
-const path = require("path");
 
 const DEBUG = debugGenerator("css-blocks:ember-cli");
 
@@ -15,8 +21,14 @@ GLIMMER_MODULE_CONFIG.collections.components.types.push("stylesheet");
 // Default tree hook no-op function.
 const NOOP = (tree) => tree;
 
+// Default no-op plugin for templates with no associated CSS Block.
+// `visitors` is used by Ember < 3.0.0. `visitor` is used by Glimmer and Ember >= 3.0.0.
+const NOOP_PLUGIN = { name: 'css-blocks-noop', visitors: {}, visitor: {} };
+
 module.exports = {
   name: '@css-blocks/ember-cli',
+  outputFile: 'app.css',
+  aggregateFile: 'css-blocks.css',
   isDevelopingAddon() { return true; },
   transports: new Map(),
   _owners: new Set(),
@@ -37,7 +49,7 @@ module.exports = {
     // If there is no analyzer or mapping for this template in the transport, don't do anything.
     if (!transport) {
       DEBUG(`No transport object found found for "${modulePrefix}". Skipping rewrite.`);
-      return { name: 'css-blocks-noop', visitors: {} };
+      return NOOP_PLUGIN;
     }
 
     // Woo, shared memory wormhole!...
@@ -46,12 +58,12 @@ module.exports = {
     // If there is no analyzer or mapping for this template in the transport, don't do anything.
     if (!analyzer || !mapping) {
       DEBUG(`No mapping object found found for template "${env.meta.moduleName || env.meta.specifier}". Skipping rewrite.`);
-      return { name: 'css-blocks-noop', visitors: {} };
+      return NOOP_PLUGIN;
     }
 
     // If no specifier data for this template, pass through silently.
     if (!env.meta.moduleName && !env.meta.specifier) {
-      return { name: 'css-blocks-noop', visitors: {} };
+      return NOOP_PLUGIN;
     }
 
     // TODO: Write a better `getAnalysis` method on `Analyzer`
@@ -66,7 +78,7 @@ module.exports = {
     // If there is no analysis for this template in any of the transports, don't do anything.
     if (!analysis) {
       DEBUG(`No analysis found for template "${env.meta.moduleName || env.meta.specifier}". Skipping rewrite.`);
-      return { name: 'css-blocks-noop', visitors: {} };
+      return NOOP_PLUGIN;
     }
 
     // If we do have a matching analysis, run the rewriter transforms!
@@ -119,7 +131,7 @@ module.exports = {
     this._owners.add(parent);
 
     // Fetch information about the environment we're running in.
-    let env = this.getEnv(parent);
+    let env = this.env = this.getEnv(parent);
 
     // Fetch and validate user-provided options.
     let options = this._options = this.getOptions(env);
@@ -127,11 +139,17 @@ module.exports = {
     // If the consuming app has explicitly disabled CSS Blocks, exit.
     if (options.disabled) { return; }
 
+    // Determine the aggregate file that we'll be storing Block styles in
+    // during the build.
+    this.aggregateFile = options.output || (env.isEmber ? `css-blocks.css` : "src/ui/styles/css-blocks.css");
+
     // In Ember, we need to inject the CSS Blocks runtime helpers. Only do this in
     // the top level addon. `app.import` is not a thing in Glimmer.
     // TODO: Pull in as CJS so we don't need to build @css-blocks/glimmer to CJS *and* AMD.
     //       Blocked by: https://github.com/rwjblue/ember-cli-cjs-transform/issues/72
     if (env.isEmber && env.app === parent) {
+      this.outputFile = env.app.options.outputPaths.app.css.app.slice(1);
+
       env.app.import('node_modules/@css-blocks/glimmer/dist/amd/src/helpers/classnames.js', {
         using: [{ transformation: 'amd', as: '@css-blocks/helpers/classnames' }],
         resolveFrom: __dirname,
@@ -166,6 +184,27 @@ module.exports = {
       parent.trees[treeName] = this.genTreeWrapper(env, options)(parent.trees[treeName]);
     }
 
+  },
+
+  // At the very end of the build, append our CSS Blocks aggregate file to
+  // the main `app.css` file. Un-link the destination file first to make sure
+  // we don't modify the source file if broccoli sym-linked it all the way back.
+  postprocessTree(name, tree) {
+
+    const aggregatorTree = this.env.app.trees.cssblocks;
+
+    // If this is not the root app, or the css tree, no-op.
+    if (this.env.isAddon || name !== 'css' || !aggregatorTree) { return tree; }
+
+    DEBUG(`Writing all CSS Blocks output to "${this.outputFile}".`);
+    let merged = new BroccoliMerge([tree, aggregatorTree], { overwrite: true })
+    merged = new BroccoliConcat(merged, {
+      outputFile: this.outputFile,
+      inputFiles: [ this.outputFile, this.aggregateFile ],
+      allowNone: true,
+    });
+
+    return new BroccoliMerge([tree, merged], { overwrite: true });
   },
 
   getEnv(parent){
@@ -247,8 +286,6 @@ module.exports = {
   genTreeWrapper(env, options, prev = NOOP) {
     const { isEmber, app, parent, rootDir, moduleConfig, modulePrefix } = env;
 
-    const outputPath = options.output || (isEmber ? `app.css` : "src/ui/styles/app.css");
-
     // In Ember, we treat every template as an entry point. `BroccoliCSSBlocks` will
     // automatically discover all template files if an empty entry array is passed.
     const entry = isEmber ? [] : (Array.isArray(options.entry) ? options.entry : [options.entry]);
@@ -272,7 +309,7 @@ module.exports = {
     return (tree) => {
       if (!tree) { return prev.call(parent, tree); }
       tree = new CSSBlocksAnalyze(tree, transport, broccoliOptions);
-      app.trees.styles = new CSSBlocksAggregate([app.trees.styles, tree], transport, outputPath);
+      app.trees.cssblocks = new CSSBlocksAggregate([app.trees.cssblocks || app.trees.styles, tree], transport, this.aggregateFile);
 
       // Mad hax for Engines <=0.5.20  support 💩 Right now, engines will throw away the
       // tree passed to `treeForAddon` and re-generate it. In order for template rewriting

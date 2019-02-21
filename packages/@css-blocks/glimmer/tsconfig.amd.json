@@ -1,13 +1,12 @@
 {
   "extends": "../../../tsconfig.json",
   "compilerOptions": {
-    "outDir": "dist/amd",
-    "baseUrl": "dist/amd",
-    "module": "amd"
+    "outDir": "dist/amd/src/helpers",
+    "baseUrl": "dist/amd/src/helpers",
+    "target": "es5"
   },
   "include": [
-    "src",
-    "test"
+    "src/helpers"
   ],
   "exclude": [
     "sanity",

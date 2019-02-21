@@ -3,6 +3,44 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.20.0-beta.7"></a>
+# [0.20.0-beta.7](https://github.com/linkedin/css-blocks/compare/v0.20.0-beta.5...v0.20.0-beta.7) (2019-02-01)
+
+
+### Bug Fixes
+
+* packages/[@css-blocks](https://github.com/css-blocks)/website/.snyk & packages/[@css-blocks](https://github.com/css-blocks)/website/package.json to reduce vulnerabilities ([#221](https://github.com/linkedin/css-blocks/issues/221)). ([b53f39f](https://github.com/linkedin/css-blocks/commit/b53f39f))
+* packages/[@css-blocks](https://github.com/css-blocks)/website/package.json to reduce vulnerabilities ([#225](https://github.com/linkedin/css-blocks/issues/225)). ([31270bd](https://github.com/linkedin/css-blocks/commit/31270bd))
+
+
+
+
+
+<a name="0.20.0-beta.6"></a>
+# [0.20.0-beta.6](https://github.com/linkedin/css-blocks/compare/v0.20.0-beta.5...v0.20.0-beta.6) (2019-02-01)
+
+
+### Bug Fixes
+
+* packages/[@css-blocks](https://github.com/css-blocks)/website/.snyk & packages/[@css-blocks](https://github.com/css-blocks)/website/package.json to reduce vulnerabilities ([#221](https://github.com/linkedin/css-blocks/issues/221)). ([b53f39f](https://github.com/linkedin/css-blocks/commit/b53f39f))
+* packages/[@css-blocks](https://github.com/css-blocks)/website/package.json to reduce vulnerabilities ([#225](https://github.com/linkedin/css-blocks/issues/225)). ([31270bd](https://github.com/linkedin/css-blocks/commit/31270bd))
+
+
+
+
+
+<a name="0.20.0-beta.5"></a>
+# [0.20.0-beta.5](https://github.com/linkedin/css-blocks/compare/v0.20.0-beta.4...v0.20.0-beta.5) (2019-01-08)
+
+
+### Features
+
+* Better examples. Work-in-progress. ([b01fc3d](https://github.com/linkedin/css-blocks/commit/b01fc3d))
+
+
+
+
+
 <a name="0.20.0-beta.4"></a>
 # [0.20.0-beta.4](https://github.com/linkedin/css-blocks/compare/v0.20.0-beta.3...v0.20.0-beta.4) (2018-10-19)
 
